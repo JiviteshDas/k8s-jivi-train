@@ -1,0 +1,48 @@
+name: Docker Image CI
+# name of pipeline 
+# Now this  is github triggers 
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+# what kind of jobs we want to run 
+jobs:
+# name of job -- build is just name to refer we can have any name 
+  build:
+    # this runner provided by github it self we can ask for windows | linux | mac based runners 
+    runs-on: ubuntu-latest 
+
+    steps:
+    - name: default action in github action official which check repo
+    # uses section is desing to consume predefine actions 
+    # to get list of workflow like checkout use this link https://github.com/actions
+      uses: actions/checkout@v5
+    - name: we can run commands depends on runs-on os 
+      run: |
+        date
+        echo $GITHUB_REF
+        echo $TAG
+        ls -a
+        docker version
+        kubectl version --client
+    - name: lets build docker image
+      run: |
+        docker build -t jiviapp:v1 webapp-code
+        docker images
+
+    # - name: logging to docker hub 
+    #   uses: docker/login-action@v3
+    #   with:
+    #       username: ${{ secrets.DOCKERHUB_USERNAME }}
+    #       password: ${{ secrets.DOCKERHUB_TOKEN }}    
+      # we can search some workflow on google and use it like given below 
+    - uses: mr-smithers-excellent/docker-build-push@v6
+      name: Build & push Docker image
+      with:
+        image: jiviteshdas91/webapp-roche-jivi
+        tags: v1, latest
+        registry: docker.io
+        dockerfile: webapp-code/Dockerfile
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
